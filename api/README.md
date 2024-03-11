@@ -34,3 +34,8 @@ After that can trigger k8s job creation by sending POST request to http://127.0.
   "keyword": "tesla"
 }
 ```
+
+## TODO
+- [ ] Test k8s
+- [ ] Integration with kafka
+- [ ] Monitoring and Logging
