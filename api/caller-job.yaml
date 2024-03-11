@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: caller-job-{{keyword}}-$(uuidgen) 
+spec:
+  template:
+    spec:
+      containers:
+      - name: caller
+        image: char-1ee/caller-function:latest
+        args: ["python", "caller.py", "{{keyword}}"]
+      restartPolicy: Never
+  backoffLimit: 4
