@@ -4,6 +4,8 @@
 .DS_Store
 .cache/
 
+target
+
 # Compiled class file
 *.class
 
