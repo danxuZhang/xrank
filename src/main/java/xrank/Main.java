@@ -21,7 +21,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.time.Duration;
 
 public class Main {
-    public static final String[] inputTopics = {"nvidia", "tesla"};
+    public static final String inputTopic = "input";
     public static final String outputTopic = "output";
 
     public static void main(String[] args) throws Exception {
@@ -29,57 +29,52 @@ public class Main {
                 StreamExecutionEnvironment.getExecutionEnvironment();
         final String brokers = "localhost:9093";
 
-        for (String topic : inputTopics) {
-            KafkaSource<String> source = KafkaSource.<String>builder()
-                    .setBootstrapServers(brokers)
-                    .setTopics(topic)
-                    .setDeserializer(KafkaRecordDeserializationSchema.valueOnly(StringDeserializer.class))
-                    .build();
 
-            DataStream<String> stream = env.fromSource(source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(2
-            )), "Kafka Source");
+        KafkaSource<KeywordMessage> source = KafkaSource.<KeywordMessage>builder()
+                .setBootstrapServers(brokers)
+                .setTopics(inputTopic)
+                .setDeserializer(new KeywordMessageKafkaDeserializationSchema())
+                .build();
 
-            DataStream<String> summarizedStream = stream
-                    .windowAll(SlidingEventTimeWindows.of(Time.seconds(30), Time.seconds(5)))
-                    // .trigger(new FiveSecondIntervalTrigger())
-                    .apply(new SummarizeWindowFunction());
+        DataStream<KeywordMessage> stream = env.fromSource(source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(2)), "Kafka Source");
+
+//        DataStream<String> stream = env.fromSource(source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(2
+//        )), "Kafka Source");
+
+        DataStream<String> summarizedStream = stream
+                .keyBy(KeywordMessage::getKeyword)
+                .windowAll(SlidingEventTimeWindows.of(Time.seconds(30), Time.seconds(5)))
+                // .trigger(new FiveSecondIntervalTrigger())
+                .apply(new SummarizeWindowFunction());
 
 
-            KafkaSink<String> sink = KafkaSink.<String>builder()
-                    .setBootstrapServers(brokers)
-                    .setRecordSerializer(KafkaRecordSerializationSchema.builder()
-                            .setTopic(outputTopic)
-                            .setValueSerializationSchema(new SimpleStringSchema())
-                            .build()
-                    )
-                    .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
-                    .build();
+        KafkaSink<String> sink = KafkaSink.<String>builder()
+                .setBootstrapServers(brokers)
+                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                        .setTopic(outputTopic)
+                        .setValueSerializationSchema(new SimpleStringSchema())
+                        .build()
+                )
+                .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
+                .build();
 
-            summarizedStream.print();
-            summarizedStream.sinkTo(sink);
-        }
+        summarizedStream.print();
+        summarizedStream.sinkTo(sink);
 
 
         env.execute("Kafka Flink Summarization");
     }
 
-    public static class SummarizeWindowFunction implements AllWindowFunction<String, String, TimeWindow> {
+    public static class SummarizeWindowFunction implements AllWindowFunction<KeywordMessage, String, TimeWindow> {
         private static final long serialVersionUID = 1L; // Explicit serialVersionUID
 
         @Override
-        public void apply(TimeWindow window, Iterable<String> values, Collector<String> out) throws Exception {
+        public void apply(TimeWindow window, Iterable<KeywordMessage> values, Collector<String> out) throws Exception {
             Summarizer summarizer = new DummySummarizer(); // Assuming Summarizer is serializable
             StringBuilder sb = new StringBuilder();
-            for (String value : values) {
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                    JsonNode rootNode = mapper.readTree(value);
-                    String content = rootNode.path("content").asText();
-                    System.out.println("Extracted content: " + content);
-                    sb.append(content);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            for (KeywordMessage message : values) {
+                String content = message.getContent();
+                sb.append(content);
             }
             String summarized = summarizer.summarize(sb.toString());
             out.collect(summarized);

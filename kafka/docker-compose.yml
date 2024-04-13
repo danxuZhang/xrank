@@ -10,7 +10,7 @@ services:
       - "9092:9092"
       - "9093:9093"
     environment:
-      KAFKA_CREATE_TOPICS: "xrank:1:1,tesla:1:1,nvidia:1:1,output:1:1"
+      KAFKA_CREATE_TOPICS: "xrank:1:1,input:1:1,output:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9093
