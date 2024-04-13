@@ -8,9 +8,9 @@ producer = KafkaProducer(bootstrap_servers=['localhost:9093'],
 cnt = 0
 while True:
     if cnt % 2 == 0:
-        producer.send('nvidia', {'content': f"nvidia content{cnt // 2}"})
+        producer.send('input', {'keyword': 'nvidia', 'content': f"nvidia content{cnt // 2}"})
     else:
-        producer.send('tesla', {'content': f"tesla content{cnt // 2}"})
+        producer.send('input', {'keyword': 'tesla', 'content': f"tesla content{cnt // 2}"})
     producer.flush()
     print(f"Messages sent successfully @ timestamp {cnt}")
     cnt += 1;
