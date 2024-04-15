@@ -1,0 +1,6 @@
+grpcio
+grpcio-tools
+deepspeed
+torch
+transformers
+huggingface-hub
