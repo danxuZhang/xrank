@@ -21,7 +21,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.time.Duration;
 
 public class Main {
-    public static final String inputTopic = "input";
     public static final String outputTopic = "output";
 
     public static void main(String[] args) throws Exception {
@@ -32,29 +31,22 @@ public class Main {
 
         KafkaSource<KeywordMessage> source = KafkaSource.<KeywordMessage>builder()
                 .setBootstrapServers(brokers)
-                .setTopics(inputTopic)
+                .setTopics(Constants.kafkaInputTopic)
                 .setDeserializer(new KeywordMessageKafkaDeserializationSchema())
                 .build();
 
         DataStream<KeywordMessage> stream = env.fromSource(source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(2)), "Kafka Source");
 
-//        DataStream<String> stream = env.fromSource(source, WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofSeconds(2
-//        )), "Kafka Source");
-
         DataStream<String> summarizedStream = stream
                 .keyBy(KeywordMessage::getKeyword)
-                .windowAll(SlidingEventTimeWindows.of(Time.seconds(30), Time.seconds(5)))
-                // .trigger(new FiveSecondIntervalTrigger())
+                .windowAll(SlidingEventTimeWindows.of(Time.seconds(Constants.flinkSlidingWindowSize), Time.seconds(Constants.
+                        flinkSlidingWindowGap)))
                 .apply(new SummarizeWindowFunction());
 
 
         KafkaSink<String> sink = KafkaSink.<String>builder()
                 .setBootstrapServers(brokers)
-                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
-                        .setTopic(outputTopic)
-                        .setValueSerializationSchema(new SimpleStringSchema())
-                        .build()
-                )
+                .setRecordSerializer(new KeywordKafkaSerializationSchema(Constants.kafkaDefaultOutputTopic))
                 .setDeliveryGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
                 .build();
 
@@ -70,7 +62,7 @@ public class Main {
 
         @Override
         public void apply(TimeWindow window, Iterable<KeywordMessage> values, Collector<String> out) throws Exception {
-            Summarizer summarizer = new DummySummarizer(); // Assuming Summarizer is serializable
+            Summarizer summarizer = new TextRankSummarizer(); // Assuming Summarizer is serializable
             StringBuilder sb = new StringBuilder();
             for (KeywordMessage message : values) {
                 String content = message.getContent();
