@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package textrank;
+
+service TextRankService {
+  rpc Summarize(Message) returns (Message);
+}
+
+message Message {
+  string text = 1;
+}
