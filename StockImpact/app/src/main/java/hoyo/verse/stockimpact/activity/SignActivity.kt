@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import hoyo.verse.stockimpact.R
+import hoyo.verse.stockimpact.util.TopicManager
 
 
 class SignActivity : AppCompatActivity() {
@@ -75,9 +76,7 @@ class SignActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 // Sign in success
                 Toast.makeText(baseContext, "Sign In Successful.", Toast.LENGTH_SHORT).show()
-                val signIntent = Intent(this, InitTopicActivity::class.java)
-                startActivity(signIntent)
-                finish()
+                TopicManager.getTopicsAndCheckIfInit(this)
             } else {
                 // If sign in fails
                 Toast.makeText(baseContext, "Sign In Failed. Please check email or password.", Toast.LENGTH_SHORT).show()
