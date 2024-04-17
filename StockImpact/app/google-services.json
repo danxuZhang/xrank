@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "236680712331",
+    "project_id": "cloudcomputing-7aa82",
+    "storage_bucket": "cloudcomputing-7aa82.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:236680712331:android:bcea4c2c5ee8a6b5aac48e",
+        "android_client_info": {
+          "package_name": "hoyo.verse.stockimpact"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8ekRYm2FpigZAjmXKkN1EAwZGb2ncFYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
