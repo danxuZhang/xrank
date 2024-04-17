@@ -1,6 +1,7 @@
 package hoyo.verse.stockimpact.activity
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -60,6 +61,9 @@ class SignActivity : AppCompatActivity() {
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
                 Toast.makeText(baseContext, "Sign Up Successful.", Toast.LENGTH_SHORT).show()
+                val signIntent = Intent(this, InitTopicActivity::class.java)
+                startActivity(signIntent)
+                finish()
             } else {
                 Toast.makeText(baseContext, "Sign Up Failed.", Toast.LENGTH_SHORT).show()
             }
@@ -71,6 +75,9 @@ class SignActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 // Sign in success
                 Toast.makeText(baseContext, "Sign In Successful.", Toast.LENGTH_SHORT).show()
+                val signIntent = Intent(this, InitTopicActivity::class.java)
+                startActivity(signIntent)
+                finish()
             } else {
                 // If sign in fails
                 Toast.makeText(baseContext, "Sign In Failed. Please check email or password.", Toast.LENGTH_SHORT).show()
